@@ -1,63 +1,76 @@
 import { useState } from 'react';
 import './App.css';
 
+// # React Interview Challenge.
+
+// Desenvolva uma aplicação em que:
+
+// - o usuário pode clicar em qualquer lugar da página. [DONE]
+// - deve-se renderizar um pequeno círculo na posição clicada . [DONE]
+// - a cada clique, mantém-se os círculos já criados e renderiza-se um novo. [DONE]
+// - crie duas funcionalidades para a aplicação: [DONE]
+//     - desfazer 
+//     - refazer 
+
+
+
 function App() {
-  const [list, setList] = useState([]);
-  const [undid, setUndid] = useState([]);
+  const [listPosition, setListPosition] = useState([])
+  const [removedCoordinates, setRemovedCoordinates] = useState([])
 
-  const handleClick = (event) => {
-    const newDot = {
-      clientX: event.clientX,
-      clientY: event.clientY,
-    };
+  const click = (event) => {
+    const position = { clientX: event.clientX, clientY: event.clientY }
+    setListPosition((data) => [...data, position])
+  }
+  const back = (event) => {
+    event.stopPropagation()
 
-    console.log(newDot);
-    setList((prev) => [...prev, newDot]);
-    setUndid([]);
-  };
-
-  const handleUndo = (event) => {
-    event.stopPropagation();
-    console.log('undo');
-
-    if (list.length === 0) {
-      return;
+    if (listPosition.length == 0) {
+      return
     }
 
-    const lastItem = list[list.length - 1];
-    setUndid((prev) => [...prev, lastItem]);
+    setRemovedCoordinates((data) => {
+      const index = listPosition.length - 1
+      const array = [...data, listPosition[index]]
+      return array
+    })
+    setListPosition((data) => {
+      const array = [...data]
+      array.pop()
+      return array
+    })
+  }
+  const proceed = (event) => {
+    event.stopPropagation()
 
-    setList((prev) => {
-      const newArr = [...prev].slice(0, -1);
-      return newArr;
-    });
-  };
-
-  const handleRedo = (event) => {
-    event.stopPropagation();
-
-    if (undid.length === 0) {
-      return;
+    if (removedCoordinates.length == 0) {
+      return
     }
 
-    const recoveredDot = undid[undid.length - 1];
-    setUndid((prev) => {
-      const newArr = [...prev].slice(0, -1);
-      return newArr;
-    });
-    setList((prev) => [...prev, recoveredDot]);
-  };
+    setListPosition((data) => {
+      const index = removedCoordinates.length - 1
+      const lastPosition = removedCoordinates[index]
+      const array = [...data, lastPosition]
+      return array
+    })
 
+    setRemovedCoordinates((data) => {
+      const array = [...data]
+      array.pop()
+      return array
+    })
+
+  }
+  console.log('listPosition', listPosition)
+  console.log('removedCoordinates', removedCoordinates)
   return (
-    <div id='page' onClick={handleClick}>
-      <button onClick={handleUndo}>Desfazer</button>
-      <button onClick={handleRedo}>Refazer</button>
-      {list.map((item, index) => (
-        <span
-          key={index}
-          className='dot'
-          style={{ left: item.clientX, top: item.clientY }}
-        />
+    <div onClick={click} className='back'>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <button onClick={back}>Desfazer</button>
+        <button onClick={proceed}>Refazer</button>
+      </div>
+      {listPosition.map((data) => (
+        <span className='circle' style={{ top: data.clientY, left: data.clientX }} />
       ))}
     </div>
   );
